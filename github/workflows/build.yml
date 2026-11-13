@@ -1,0 +1,33 @@
+name: Build Plus Calculator
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-2019
+
+    steps:
+      - name: Get source code
+        uses: actions/checkout@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.8.10'
+
+      - name: Install tools
+        run: pip install pyinstaller==5.13.2 pillow==10.4.0
+
+      - name: Create plus icon
+        run: |
+          python -c "from PIL import Image, ImageDraw; im=Image.new('RGBA',(256,256),(32,36,43,255)); d=ImageDraw.Draw(im); d.rounded_rectangle((16,16,240,240),radius=40,fill=(240,168,58,255)); d.rectangle((112,55,144,201),fill='white'); d.rectangle((55,112,201,144),fill='white'); im.save('plus_icon.ico',sizes=[(256,256),(64,64),(32,32),(16,16)])"
+
+      - name: Build EXE
+        run: pyinstaller --onefile --windowed --name PlusCalculator --icon=plus_icon.ico calculator.py
+
+      - name: Upload EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: PlusCalculator
+          path: dist/PlusCalculator.exe
